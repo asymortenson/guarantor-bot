@@ -177,10 +177,9 @@ func(app *application) checkTransaction(done chan bool, b *tele.Bot, link string
 			}
 		case <-ticker.C:
 				go app.requestForTransaction(ch, message, errs)
-		}
+			}
 	
 	}
-
 }
 
 

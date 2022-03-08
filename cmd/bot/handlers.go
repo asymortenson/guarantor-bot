@@ -165,22 +165,22 @@ func (app *application) handleApproveChannel() error {
 			errs := make(chan error, 1)
 
 			go app.checkTransaction(done, app.bot, ad.Link, c.Chat(), ad.Msg, errs)
+			
+			time.Sleep(time.Minute * 5)
+			close(done)
 
 			app.bot.Handle(&btnDeclineAfterPayment, func(c tele.Context) error {	
 				close(done)
 	
 				return nil
 			})
+			
 	
 
 			if err := <-errs; err != nil {
 				return err
 			}
 			
-			time.Sleep(time.Minute * 5)
-			close(done)
-
-
 			return nil
 
 		})

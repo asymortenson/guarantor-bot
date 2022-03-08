@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS ads (
     id bigserial PRIMARY KEY,
-    user_id integer,
+    user_id BIGINT,
     link text,
     msg text,
     created_at timestamp(0) with time zone NOT NULL default NOW(),
