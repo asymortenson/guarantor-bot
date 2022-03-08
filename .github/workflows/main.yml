@@ -73,11 +73,10 @@ jobs:
             export DB_MAX_OPEN_CONNS=${{ secrets.DB_MAX_OPEN_CONNS }}           
             export DB_MAX_IDLE_CONNS=${{ secrets.DB_MAX_IDLE_CONNS }}           
             export DB_MAX_IDLE_TIME=${{ secrets.DB_MAX_IDLE_TIME }}        
-            export AUTH_SERVER_URL=${{ secrets.AUTH_SERVER_URL }}  
             export REQUEST_LINK=${{ secrets.REQUEST_LINK }}  
 
             # Run a new container from a new image
-            docker run -e REQUEST_LINK -e TOKEN -e AUTH_SERVER_URL -e API_KEY -e WALLET -e FEE -e ADMIN_CHANNEL -e EXCHANGE_CHANNEL -e DB_DSN -e DB_MAX_OPEN_CONNS -e DB_MAX_IDLE_CONNS -e DB_MAX_IDLE_TIME -d \
+            docker run -e REQUEST_LINK -e TOKEN -e API_KEY -e WALLET -e FEE -e ADMIN_CHANNEL -e EXCHANGE_CHANNEL -e DB_DSN -e DB_MAX_OPEN_CONNS -e DB_MAX_IDLE_CONNS -e DB_MAX_IDLE_TIME -d \
             --restart always \
             --name $(echo $IMAGE_NAME) \
             $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
