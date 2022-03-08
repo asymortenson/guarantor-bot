@@ -143,6 +143,7 @@ func (app *application) handleApproveChannel() error {
 
 			var (
 				paidRow = &tele.ReplyMarkup{}
+				btnDeclineAfterPayment = selector.Data(app.config.Buttons.DeclinePaid, "decline_after_payment")
 			)
 	
 			paidRow.Inline(
@@ -165,6 +166,13 @@ func (app *application) handleApproveChannel() error {
 
 			go app.checkTransaction(done, app.bot, ad.Link, c.Chat(), ad.Msg, errs)
 
+			app.bot.Handle(&btnDeclineAfterPayment, func(c tele.Context) error {	
+				close(done)
+	
+				return nil
+			})
+	
+
 			if err := <-errs; err != nil {
 				return err
 			}
@@ -181,9 +189,18 @@ func (app *application) handleApproveChannel() error {
 		
 
 		app.bot.Handle(&btnDeclinePaid, func(c tele.Context) error {	
-			close(done)
 
-			return nil
+			var (
+				declineRow = &tele.ReplyMarkup{}
+
+				btnDeclinedResponse = selector.Data(app.config.Buttons.DeclinePaid, "decline_after_payment"))
+
+				declineRow.Inline(
+					declineRow.Row(btnDeclinedResponse),
+				)
+		
+			c.Edit(paymentMessage, &tele.SendOptions{ParseMode: "MarkdownV2", ReplyMarkup: declineRow})
+			return c.Send(app.config.Messages.Responses.FailedPaymentResponse, &tele.SendOptions{ParseMode: "MarkdownV2"})
 		})
 
 

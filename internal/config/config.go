@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+
 	"github.com/spf13/viper"
 )
 
@@ -91,6 +93,20 @@ func Init() (*Config, error) {
 }
 
 func parseEnv(cfg *Config) error {
+
+	os.Setenv("TOKEN", "5124531442:AAGIiZ73NJZXUSA_epez5BZyLdugjf0pwcw")
+	os.Setenv("API_KEY", "498f0c3860ee799bb60650d5a7c0adfa2cf5adc877dc430cdd1adef1bf402888")
+	os.Setenv("WALLET", "EQBtZgocpA8H1S3U1uCj-Uoz1BvuDESm2laaNVEexQZ7nQPp")
+	os.Setenv("FEE", "0.2")
+    os.Setenv("REQUEST_LINK", "@abouttonbot")
+	os.Setenv("ADMIN_CHANNEL", "-1001688233561")
+	os.Setenv("EXCHANGE_CHANNEL", "-1001523233085")
+
+	os.Setenv("DB_DSN", "postgresql://doadmin:gkfa8123qylxVwAv@app-cc86af8b-3b5b-41f8-af11-e750fc477993-do-user-10807910-0.b.db.ondigitalocean.com:25060/telegrambot?sslmode=require")
+
+	os.Setenv("DB_MAX_OPEN_CONNS", "25")
+	os.Setenv("DB_MAX_IDLE_CONNS", "25")
+	os.Setenv("DB_MAX_IDLE_TIME", "15m")
 
 
 
