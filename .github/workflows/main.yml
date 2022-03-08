@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  # Triggers the workflow on push events but only for the master branch
+  push:
+    branches:
+      - main
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Image version"
+        required: true
+#2
+
+env:
+  REGISTRY: "registry.digitalocean.com/guarantor-bot"
+  IMAGE_NAME: "guarantor-bot"
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v2
+
+      - name: Build container image
+        run: docker build -t $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7) .
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Log in to DigitalOcean Container Registry with short-lived credentials
+        run: doctl registry login --expiry-seconds 600
+
+      - name: Remove all old images
+        run: if [ ! -z "$(doctl registry repository list | grep "$(echo $IMAGE_NAME)")" ]; then doctl registry repository delete-manifest $(echo $IMAGE_NAME) $(doctl registry repository list-tags $(echo $IMAGE_NAME) | grep -o "sha.*") --force; else echo "No repository"; fi
+
+      - name: Push image to DigitalOcean Container Registry
+        run: docker push $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build_and_push
+
+    steps:
+      - name: Deploy to Digital Ocean droplet via SSH action
+        uses: appleboy/ssh-action@v0.1.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          envs: IMAGE_NAME,REGISTRY,{{ secrets.DIGITALOCEAN_ACCESS_TOKEN }},GITHUB_SHA
+          script: |
+            # Login to registry
+            docker login -u ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} -p ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }} $(echo $REGISTRY)
+            # Stop running container
+            docker stop $(echo $IMAGE_NAME)
+            # Remove old container
+            docker rm $(echo $IMAGE_NAME)
+
+            # Set env variables
+            export TOKEN=${{ secrets.TELEGRAM_TOKEN }}
+            export API_KEY=${{ secrets.TELEGRAM_API_KEY }}
+            export WALLET=${{ secrets.WALLET }}
+            export FEE=${{ secrets.FEE }}
+            export ADMIN_CHANNEL=${{ secrets.ADMIN_CHANNEL }}           
+            export EXCHANGE_CHANNEL=${{ secrets.EXCHANGE_CHANNEL }}           
+            export DB_DSN=${{ secrets.DB_DSN }}           
+            export DB_MAX_OPEN_CONNS=${{ secrets.DB_MAX_OPEN_CONNS }}           
+            export DB_MAX_IDLE_CONNS=${{ secrets.DB_MAX_IDLE_CONNS }}           
+            export DB_MAX_IDLE_TIME=${{ secrets.DB_MAX_IDLE_TIME }}        
+            export AUTH_SERVER_URL=${{ secrets.AUTH_SERVER_URL }}  
+            export REQUEST_LINK=${{ secrets.REQUEST_LINK }}  
+
+            # Run a new container from a new image
+            docker run -e REQUEST_LINK -e TOKEN -e AUTH_SERVER_URL -e API_KEY -e WALLET -e FEE -e ADMIN_CHANNEL -e EXCHANGE_CHANNEL -e DB_DSN -e DB_MAX_OPEN_CONNS -e DB_MAX_IDLE_CONNS -e DB_MAX_IDLE_TIME -d \
+            --restart always \
+            --name $(echo $IMAGE_NAME) \
+            $(echo $REGISTRY)/$(echo $IMAGE_NAME):$(echo $GITHUB_SHA | head -c7)
