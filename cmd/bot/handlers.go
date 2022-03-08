@@ -114,10 +114,9 @@ func (app *application) handleApproveChannel() error {
 			return err
 		}
 
-
 		ad := &data.Ad{
 				UserId:   id,
-				Link: textForSend[1],
+				Link: strings.Join(textForSend[1:], ""),
 				Msg: message,
 		}
 

@@ -61,7 +61,6 @@ type Responses struct {
 	Signature 			  	  string `mapstructure:"signature"`
 
 }
-//delete configs
 
 func Init() (*Config, error) {
 	var cfg Config
@@ -92,6 +91,9 @@ func Init() (*Config, error) {
 }
 
 func parseEnv(cfg *Config) error {
+
+
+
 
 	if err := viper.BindEnv("token"); err != nil {
 		return err
