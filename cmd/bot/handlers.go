@@ -378,20 +378,68 @@ func (app *application) handleStartCommand() error {
 }
 
 func (app *application) handleMailingCommand() error {
-	return nil
-}
-
-
-func (app *application) handleUpdates() error {
 	adminOnly := app.bot.Group()
 
-	chatIds := []int64{2086435608}
+	chatIds := []int64{2086435608, 359499553}
 
 	adminOnly.Use(middleware.Whitelist(chatIds...))
 
 	adminOnly.Handle("/mailing", func(c tele.Context) error {
-		return c.Send(c.Text())
+		return c.Send("Введите текст для массовой рассылки пользователям:")
 	})
+
+	adminOnly.Handle(tele.OnText, func(c tele.Context) error {
+
+		users, err := app.models.Ads.GetAll()
+
+		if err != nil {
+			return err
+		}
+
+		for index, user := range users {
+			if index % 25 == 0 {
+				time.Sleep(time.Second * 5)
+			}
+
+			chat, err := app.bot.ChatByID(user.UserId)
+
+			if err != nil {
+				return err
+			}
+			_, err = app.bot.Send(chat, c.Text())
+
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
+	return nil
+
+}
+
+
+func (app *application) handleUpdates() error {
+	app.bot.Handle(tele.OnMyChatMember, func(c tele.Context) error {
+		if c.ChatMember().NewChatMember.Role == "member" {
+		user := data.User{
+			ID: c.ChatMember().NewChatMember.User.ID,
+		}
+		err := app.models.Users.Insert(&user)
+		if err != nil {
+			return err
+		}
+		return nil
+		}else {
+			err := app.models.Users.Delete(c.ChatMember().OldChatMember.User.ID)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+	})
+
 
 	err := app.handleMailingCommand()
 

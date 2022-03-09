@@ -72,6 +72,7 @@ func main() {
 	if err != nil {
 		logger.PrintError(err, nil)
 	}
+	
 	app.bot.Start()
 
 }
