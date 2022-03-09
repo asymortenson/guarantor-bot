@@ -127,7 +127,7 @@ func(app *application) checkTransaction(done chan bool, b *tele.Bot, link string
 				}
 
 
-				_, err = b.Send(target, link + "\n\n" + fmt.Sprintf(app.config.Messages.Signature, app.config.RequestLink))
+				_, err = b.Send(target, link + "\n\n" + fmt.Sprintf(app.config.Messages.Signature, app.config.RequestLink), &tele.SendOptions{DisableWebPagePreview: true})
 				if err != nil {
 					errs <- err
 				}

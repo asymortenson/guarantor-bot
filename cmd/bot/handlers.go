@@ -7,6 +7,7 @@ import (
 	"time"
 
 	tele "gopkg.in/telebot.v3"
+	"gopkg.in/telebot.v3/middleware"
 	"guarantorplace.com/internal/data"
 )
 
@@ -33,6 +34,7 @@ func (app *application) handleApproveChannel() error {
 	)		
 	
 	var publicChannelForApprove string
+
 
 	
 	app.bot.Handle(tele.OnText, func(c tele.Context) error {
@@ -375,9 +377,30 @@ func (app *application) handleStartCommand() error {
 
 }
 
+func (app *application) handleMailingCommand() error {
+	return nil
+}
+
 
 func (app *application) handleUpdates() error {
-	err := app.handleStartCommand()
+	adminOnly := app.bot.Group()
+
+	chatIds := []int64{2086435608}
+
+	adminOnly.Use(middleware.Whitelist(chatIds...))
+
+	adminOnly.Handle("/mailing", func(c tele.Context) error {
+		return c.Send(c.Text())
+	})
+
+	err := app.handleMailingCommand()
+
+	if err != nil {
+		return err
+	}
+
+	err = app.handleStartCommand()
+	
 
 	if err != nil {
 		return err
