@@ -288,8 +288,6 @@ func (app *application) handleStartCommand() error {
 			choosePublicPagePhoto = &tele.Photo{File: tele.FromURL("https://i.ibb.co/3MWWymj/Screenshot-2022-03-06-at-11-58-49.png"), Caption: "📣 *Выберите сообщество для покупки рекламы:*"}
 		)
 
-		c.Delete()
-
 		app.backToMainMenu(&btnBackToMainMenu, c, mainMenu, mainMenuPhoto, "")		
 
 		publicPagesMenu.Inline(
@@ -316,9 +314,7 @@ func (app *application) handleStartCommand() error {
 
 			app.backToMainMenu(&btnBackToPublicPages, c, publicPagesMenu, choosePublicPagePhoto, "")
 			
-			c.Delete()
-
-			return c.Send(programmerMenuPhoto, &tele.SendOptions{ReplyMarkup: publicPageInfoMenu, ParseMode: "MarkdownV2"})
+			return c.Edit(programmerMenuPhoto, &tele.SendOptions{ReplyMarkup: publicPageInfoMenu, ParseMode: "MarkdownV2"})
 		})
 
 		app.bot.Handle(&btnPublicPageAboutTon, func(c tele.Context) error {
@@ -338,13 +334,11 @@ func (app *application) handleStartCommand() error {
 
 			app.backToMainMenu(&btnBackToPublicPages, c, publicPagesMenu, choosePublicPagePhoto, "")
 			
-			c.Delete()
-
-			return c.Send(programmerMenuPhoto, &tele.SendOptions{ReplyMarkup: publicPageInfoMenu, ParseMode: "MarkdownV2"})
+			return c.Edit(programmerMenuPhoto, &tele.SendOptions{ReplyMarkup: publicPageInfoMenu, ParseMode: "MarkdownV2"})
 		})
 
 		
-		return c.Send(choosePublicPagePhoto, &tele.SendOptions{ReplyMarkup: publicPagesMenu, ParseMode: "MarkdownV2"})
+		return c.Edit(choosePublicPagePhoto, &tele.SendOptions{ReplyMarkup: publicPagesMenu, ParseMode: "MarkdownV2"})
 	})
 
 	app.bot.Handle(&btnCreateRequest, func(c tele.Context) error {
@@ -353,17 +347,12 @@ func (app *application) handleStartCommand() error {
 			putPublicPagePhoto = &tele.Photo{File: tele.FromURL("https://i.ibb.co/CMvLWDL/Screenshot-2022-03-06-at-11-57-43.png"), Caption: app.config.Messages.PutPublicPage}
 		)
 
-		c.Delete()
-
-		_, err := app.bot.Send(c.Sender(), putPublicPagePhoto, &tele.SendOptions{ParseMode:"MarkdownV2", ReplyMarkup: backToMenu})
-		if err != nil {
-			return err
-		}
+		c.Edit(putPublicPagePhoto, &tele.SendOptions{ParseMode:"MarkdownV2", ReplyMarkup: backToMenu})
 		
 		app.backToMainMenu(&btnBack, c, mainMenu, mainMenuPhoto , "")		
 
 			
-		err = app.handleApproveChannel()
+		err := app.handleApproveChannel()
 
 		if err != nil {
 			return err
@@ -421,7 +410,7 @@ func (app *application) handleMailingCommand() error {
 
 
 func (app *application) handleUpdates() error {
-	app.bot.Handle(tele.OnMyChatMember, func(c tele.Context) error {
+	app.bot.Handle(tele.OnChatMember, func(c tele.Context) error {
 		if c.ChatMember().NewChatMember.Role == "member" {
 		user := data.User{
 			ID: c.ChatMember().NewChatMember.User.ID,
